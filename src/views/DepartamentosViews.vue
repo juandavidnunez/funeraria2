@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import TabulatorTable from './components/TabulatorTable.vue'
-import DialogTw from './components/DialogTw.vue'
-import ButtonTw from './components/ButtonTw.vue'
-import icons from './assets/svg-icons.js'
-import es419 from './assets/es-419.js'
-import FormTw from './components/FormTw.vue'
+import TabulatorTable from '../components/TabulatorTable.vue'
+import DialogTw from '../components/DialogTw.vue'
+import ButtonTw from '../components/ButtonTw.vue'
+// import icons from '../assets/svg-icons.js'
+// import es419 from '../assets/es-419.js'
+import FormTw from '../components/FormTw.vue'
 
 // se comentó la columna con formatter: 'star' porque no funciona correctamente con Tailwind
 // En formatter: 'tickCross'  no funciona hozAlign: 'center'

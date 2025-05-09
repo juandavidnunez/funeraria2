@@ -1,14 +1,12 @@
 <script setup>
 import { ref } from 'vue'
+import { RouterView, RouterLink } from 'vue-router'
 
-const isSidebarOpen = ref(true)
-const departments = [
-  { name: 'Servicios Funerarios', icon: '⚰️' },
-  { name: 'Cremación', icon: '🔥' },
-  { name: 'Obituarios', icon: '📖' },
-  { name: 'Flores', icon: '💐' },
-  { name: 'Contacto', icon: '📞' }
-]
+import Departamentos from './views/DepartamentosViews.vue'
+
+//states
+const pageActive = ref(Departamentos)
+
 </script>
 
 <template>
@@ -16,14 +14,15 @@ const departments = [
     <!-- Sidebar -->
     <aside class="w-64 bg-gray-800 text-white">
       <div class="p-4">
-        <h1 class="text-2xl font-bold">Funeraria Ganti</h1>
+        <h1 class="text-2xl font-bold">Funeraria </h1>
       </div>
       <nav class="mt-4">
         <ul>
-          <li v-for="(dept, index) in departments" :key="index"
-              class="px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors">
-            <span class="mr-2">{{ dept.icon }}</span>
-            {{ dept.name }}
+          <li class="px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors">
+            <span class="mr-2"><RouterLink to="/" >Departamentos</RouterLink></span>
+
+
+           
           </li>
         </ul>
       </nav>
@@ -31,6 +30,7 @@ const departments = [
 
     <!-- Main Content -->
     <main class="flex-1 bg-gray-100">
+      
       <header class="bg-white shadow-sm p-4">
         <h2 class="text-xl text-gray-800">Panel Principal</h2>
       </header>
@@ -49,16 +49,18 @@ const departments = [
           
           <div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold mb-2">Asistencia 24/7</h3>
+            
             <p class="text-gray-600">Estamos disponibles para ayudarte en cualquier momento.</p>
           </div>
         </div>
       </div>
+      
     </main>
   </div>
 </template>
 
 <style>
-@tailwind base;
-@tailwind components;
+/* @tailwind base; */
+/* @tailwind components; */
 @tailwind utilities;
 </style>

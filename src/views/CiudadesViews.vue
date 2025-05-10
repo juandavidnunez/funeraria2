@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import TabulatorTable from './components/TabulatorTable.vue'
+import TabulatorTable from '../components/TabulatorTable.vue'
 import DialogTw from './components/DialogTw.vue'
 import ButtonTw from './components/ButtonTw.vue'
 import icons from './assets/svg-icons.js'
@@ -78,7 +78,7 @@ const formData = ref({
 // Definir la estructura del formulario
 const formFields = [
   { id: 'nombre', label: 'Nombre', type: 'text' },
-  { id: 'id', label: 'id', type: 'number' }
+  { id: 'id', label: 'id', type: 'number' },
   { id: 'departamento_id', label: 'departamento_id', type: 'number' }
 
 ]

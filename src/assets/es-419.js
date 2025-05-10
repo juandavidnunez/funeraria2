@@ -1,23 +1,22 @@
-// exportar el idioma por defecto para Tabulator
-
+// assets/es-419.js
 export default {
+  'es-419': {
     columns: {
-      name: 'Nombre' //replace the title of column name with the value "Name"
+      name: 'Nombre'
     },
     data: {
-      loading: 'Cargando', //data loader text
-      error: 'Error' //data error text
+      loading: 'Cargando',
+      error: 'Error'
     },
     groups: {
-      //copy for the auto generated item count in group header
-      item: 'item', //the singular  for item
-      items: 'items' //the plural for items
+      item: 'item',
+      items: 'items'
     },
     pagination: {
-      page_size: 'Tamaño de página', //label for the page size select element
-      page_title: 'Mostrar página', //tooltip text for the numeric page button, appears in front of the page number (eg. "Show Page" will result in a tool tip of "Show Page 1" on the page 1 button)
-      first: 'Inicio', //text for the first page button
-      first_title: 'Primera página', //tooltip text for the first page button
+      page_size: 'Tamaño de página',
+      page_title: 'Mostrar página',
+      first: 'Inicio',
+      first_title: 'Primera página',
       last: 'Última',
       last_title: 'Última página',
       prev: 'Anterior',
@@ -33,9 +32,10 @@ export default {
       }
     },
     headerFilters: {
-      default: 'columna de filtro...', //default header filter placeholder text
+      default: 'columna de filtro...',
       columns: {
-        name: 'nombre del filtro...' //replace default header filter text for column name
+        name: 'nombre del filtro...'
       }
     }
   }
+}

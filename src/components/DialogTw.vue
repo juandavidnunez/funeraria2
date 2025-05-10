@@ -1,6 +1,6 @@
 <script setup>
-import iconos from '../assets/svg-icons.js'
-import ButtonTw from './ButtonTw.vue'
+// import iconos from '../assets/svg-icons.js'
+// import ButtonTw from './ButtonTw.vue'
 import { ref } from 'vue'
 
 const popup = ref(null)

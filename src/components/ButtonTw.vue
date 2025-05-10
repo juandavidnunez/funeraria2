@@ -1,5 +1,5 @@
 <script setup>
-import iconos from '../assets/svg-icons'
+// import iconos from '../assets/svg-icons'
 const props = defineProps(['textContent'])
 </script>
 

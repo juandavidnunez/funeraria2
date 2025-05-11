@@ -10,6 +10,10 @@ const routes = [
   {
     path: '/departamentos',
     component: DepartamentosViews
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ]
 

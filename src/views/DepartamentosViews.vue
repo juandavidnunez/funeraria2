@@ -193,3 +193,25 @@ const buttons = computed(() => getButtons())
     </template>
   </DialogTw>
 </template>
+
+<!-- cambia los estilos de la tabla -->
+<style scoped>
+.tabulator {
+  background-color: #ffffff; /* fondo de la tabla */
+  color: #001f3f; /* texto azul oscuro */
+  border: 1px solid #a0c4ff;
+}
+
+.tabulator .tabulator-header {
+  background-color: #e0f0ff;
+  color: #003366;
+}
+
+.tabulator .tabulator-row {
+  background-color: #f0f8ff;
+}
+
+.tabulator .tabulator-row:hover {
+  background-color: #d0e8ff;
+}
+</style>

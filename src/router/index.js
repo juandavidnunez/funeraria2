@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import InicioView from '../views/InicioView.vue'
 import DepartamentosViews from '../views/DepartamentosViews.vue'
+import CiudadesViews from '../views/CiudadesViews.vue'
+
 
 const routes = [
   {
@@ -11,6 +13,12 @@ const routes = [
     path: '/departamentos',
     component: DepartamentosViews
   },
+   
+  {
+  path: '/ciudades/:departamentoId',
+  component: CiudadesViews
+},
+
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'

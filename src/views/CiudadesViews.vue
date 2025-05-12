@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import TabulatorTable from '../components/TabulatorTable.vue'
 import DialogTw from '../components/DialogTw.vue'
 import ButtonTw from '../components/ButtonTw.vue'
@@ -7,22 +8,31 @@ import FormTw from '../components/FormTw.vue'
 import icons from '../assets/svg-icons.js'
 import es419 from '../assets/es-419.js'
 
+const route = useRoute()
+const departamentoId = parseInt(route.params.departamentoId)
+
 const tablaTabulator = ref(null)
 const dialogTw = ref(null)
 const dialogTitle = ref('')
 
-const formData = ref({ nombre: '', id: '', departamento_id: '' })
+const ciudades = ref([])
+const formData = ref({ nombre: '', id: '' })
 const editingId = ref(null)
 const deleteId = ref(null)
 
 const formFields = [
   { id: 'nombre', label: 'Nombre', type: 'text' },
-  { id: 'id', label: 'ID', type: 'number' },
-  { id: 'departamento_id', label: 'Departamento ID', type: 'number' }
+  { id: 'id', label: 'ID', type: 'number', attrs: { readonly: true } }
 ]
 
-const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
-const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
+const ciudadesFiltradas = computed(() =>
+  Array.isArray(ciudades.value)
+    ? ciudades.value.filter(c => c.departamento_id === departamentoId)
+    : []
+)
+
+const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Editar">${icons.edit} Editar</button>`
+const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Eliminar">${icons.delete} Eliminar</button>`
 
 function editRowClick(e, cell) {
   const rowData = cell.getRow().getData()
@@ -41,41 +51,46 @@ function deleteRowClick(e, cell) {
 }
 
 const columns = ref([
-  { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
-  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick },
-  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 150 },
+  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 100 },
   { title: 'Nombre', field: 'nombre', widthGrow: 1 },
-  { title: 'Departamento ID', field: 'departamento_id', sorter: 'number', hozAlign: 'center', width: 150 }
+  { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
+  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
 ])
 
 const tabulatorOptions = ref({
   locale: 'es-419',
   langs: { 'es-419': es419 },
   pagination: true,
-  paginationMode: 'remote',
-  ajaxURL: 'http://127.0.0.1:3333/ciudades',
   paginationSize: 5,
   layout: 'fitDataStretch',
   height: '80vh',
-  footerElement: `<button class="ml-2 rounded px-4 py-1 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-1" id="agregar">${icons.add} Agregar</button>`
+  footerElement: `<button class="ml-2 rounded-lg px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-200 ease-in-out flex items-center gap-2 shadow-lg hover:shadow-xl" id="agregar">${icons.add} Agregar</button>`
 })
 
-onMounted(() => {
-  const table = tablaTabulator.value?.getTable()
-  if (!table) return
+onMounted(async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const json = await res.json()
+    ciudades.value = Array.isArray(json) ? json : json.data || []
 
-  table.on('tableBuilt', () => {
-    const agregar = document.querySelector('#agregar')
-    if (agregar) {
-      agregar.addEventListener('click', () => {
-        formData.value = { nombre: '', id: '', departamento_id: '' }
-        editingId.value = null
-        deleteId.value = null
-        dialogTitle.value = 'Agregar ciudad'
-        dialogTw.value?.popup?.show()
-      })
+    const table = tablaTabulator.value?.getTable()
+    if (table) {
+      table.setData(ciudadesFiltradas.value)
+
+      const agregarButton = document.querySelector('#agregar')
+      if (agregarButton) {
+        agregarButton.addEventListener('click', () => {
+          formData.value = { nombre: '', id: '' }
+          editingId.value = null
+          deleteId.value = null
+          dialogTitle.value = 'Agregar ciudad'
+          dialogTw.value?.popup?.show()
+        })
+      }
     }
-  })
+  } catch (error) {
+    console.error('Error al cargar ciudades:', error)
+  }
 })
 
 const guardarCambios = async () => {
@@ -86,18 +101,27 @@ const guardarCambios = async () => {
       : 'http://127.0.0.1:3333/ciudades'
     const method = isEdit ? 'PUT' : 'POST'
 
+    const body = {
+      ...formData.value,
+      departamento_id: departamentoId // Añadimos automáticamente el ID del departamento
+    }
+
     const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData.value)
+      body: JSON.stringify(body)
     })
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
-    await tablaTabulator.value.getTable().replaceData()
+    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const json = await res.json()
+    ciudades.value = Array.isArray(json) ? json : json.data || []
+
+    await tablaTabulator.value.getTable().setData(ciudadesFiltradas.value)
     cerrarDialog()
   } catch (error) {
-    console.error('Error al guardar:', error)
+    console.error('Error al guardar ciudad:', error)
   }
 }
 
@@ -110,10 +134,14 @@ const eliminarRegistro = async () => {
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
-    await tablaTabulator.value.getTable().replaceData()
+    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const json = await res.json()
+    ciudades.value = Array.isArray(json) ? json : json.data || []
+
+    await tablaTabulator.value.getTable().setData(ciudadesFiltradas.value)
     cerrarDialog()
   } catch (error) {
-    console.error('Error al eliminar:', error)
+    console.error('Error al eliminar ciudad:', error)
   }
 }
 
@@ -166,7 +194,7 @@ const buttons = computed(() => getButtons())
         :columns="columns"
         :options="tabulatorOptions"
         ref="tablaTabulator"
-        class="rounded shadow-md"
+        class="rounded-lg border shadow-lg border-gray-300 bg-white"
       />
     </div>
   </div>

@@ -1,10 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import TabulatorTable from '../components/TabulatorTable.vue'
 import DialogTw from '../components/DialogTw.vue'
+import ButtonTw from '../components/ButtonTw.vue'
 import FormTw from '../components/FormTw.vue'
 import icons from '../assets/svg-icons.js'
 import es419 from '../assets/es-419.js'
+
+const router = useRouter()
 
 const tablaTabulator = ref(null)
 const dialogTw = ref(null)
@@ -21,6 +25,7 @@ const formFields = [
 
 const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
 const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
+const ciudadesRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-emerald-600 hover:text-emerald-800" title="Ciudades">${icons.list} Ciudades</button>`
 
 function editRowClick(e, cell) {
   const rowData = cell.getRow().getData()
@@ -38,16 +43,22 @@ function deleteRowClick(e, cell) {
   dialogTw.value?.popup?.show()
 }
 
+function ciudadesRowClick(e, cell) {
+  const rowData = cell.getRow().getData()
+  router.push(`/ciudades/${rowData.id}`)
+}
+
 const columns = ref([
   { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 100 },
-  { title: 'Nombre', field: 'nombre', hozAlign: 'left', widthGrow: 1 },
+  { title: 'Nombre', field: 'nombre', widthGrow: 1 },
   { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
-  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
+  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick },
+  { formatter: ciudadesRowButton, width: 160, hozAlign: 'center', cellClick: ciudadesRowClick }
 ])
 
 const tabulatorOptions = ref({
   locale: 'es-419',
-  langs: es419,
+  langs: { 'es-419': es419 },
   pagination: true,
   paginationMode: 'remote',
   ajaxURL: 'http://127.0.0.1:3333/departamentos',
@@ -193,25 +204,3 @@ const buttons = computed(() => getButtons())
     </template>
   </DialogTw>
 </template>
-
-<!-- cambia los estilos de la tabla -->
-<style scoped>
-.tabulator {
-  background-color: #ffffff; /* fondo de la tabla */
-  color: #001f3f; /* texto azul oscuro */
-  border: 1px solid #a0c4ff;
-}
-
-.tabulator .tabulator-header {
-  background-color: #e0f0ff;
-  color: #003366;
-}
-
-.tabulator .tabulator-row {
-  background-color: #f0f8ff;
-}
-
-.tabulator .tabulator-row:hover {
-  background-color: #d0e8ff;
-}
-</style>

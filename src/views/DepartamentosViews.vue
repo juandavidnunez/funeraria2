@@ -25,7 +25,7 @@ const formFields = [
 
 const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
 const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
-const ciudadesRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-emerald-600 hover:text-emerald-800" title="Ciudades">${icons.list} Ciudades</button>`
+const ciudadesRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-emerald-600 hover:text-emerald-800" title="Ciudades"> Ciudades</button>`
 
 function editRowClick(e, cell) {
   const rowData = cell.getRow().getData()

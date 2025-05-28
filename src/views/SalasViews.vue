@@ -1,49 +1,44 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import TabulatorTable from '../components/TabulatorTable.vue'
 import DialogTw from '../components/DialogTw.vue'
-import ButtonTw from '../components/ButtonTw.vue'
 import FormTw from '../components/FormTw.vue'
 import icons from '../assets/svg-icons.js'
 import es419 from '../assets/es-419.js'
 
 const route = useRoute()
-const router = useRouter()
-const departamentoId = parseInt(route.params.departamentoId)
+const sedeId = parseInt(route.params.sedeId)
 
 const tablaTabulator = ref(null)
 const dialogTw = ref(null)
 const dialogTitle = ref('')
 
-const ciudades = ref([])
-const formData = ref({ nombre: '', id: '' })
+const salas = ref([])
+const formData = ref({ id: '', nombre: '', capacidad: '', disponibilidad: false })
 const editingId = ref(null)
 const deleteId = ref(null)
 
 const formFields = [
   { id: 'nombre', label: 'Nombre', type: 'text' },
-  { id: 'id', label: 'ID', type: 'number', attrs: { readonly: true } }
+  { id: 'capacidad', label: 'Capacidad', type: 'number' },
+  { id: 'disponibilidad', label: '¿Disponible?', type: 'checkbox' }
 ]
 
-const ciudadesFiltradas = computed(() =>
-  Array.isArray(ciudades.value)
-    ? ciudades.value.filter(c => c.departamento_id === departamentoId)
+const salasFiltradas = computed(() =>
+  Array.isArray(salas.value)
+    ? salas.value.filter(s => s.sedes_id === sedeId)
     : []
 )
 
-const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Editar">${icons.edit} Editar</button>`
-
-const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Eliminar">${icons.delete} Eliminar</button>`
-
-const verSedesButton = () =>
-  `<button class="flex items-center gap-1 border-0 bg-transparent text-green-600 hover:text-green-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Ver sedes">Sedes</button>`
+const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
+const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
 
 function editRowClick(e, cell) {
   const rowData = cell.getRow().getData()
   editingId.value = rowData.id
   formData.value = { ...rowData }
-  dialogTitle.value = 'Editar ciudad'
+  dialogTitle.value = 'Editar sala'
   dialogTw.value?.popup?.show()
 }
 
@@ -51,19 +46,15 @@ function deleteRowClick(e, cell) {
   const rowData = cell.getRow().getData()
   deleteId.value = rowData.id
   formData.value = { ...rowData }
-  dialogTitle.value = 'Eliminar ciudad'
+  dialogTitle.value = 'Eliminar sala'
   dialogTw.value?.popup?.show()
 }
 
-function verSedesClick(e, cell) {
-  const rowData = cell.getRow().getData()
-  router.push({ path: `/sedes/${rowData.id}` })
-}
-
 const columns = ref([
-  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 100 },
+  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 80 },
   { title: 'Nombre', field: 'nombre', widthGrow: 1 },
-  { formatter: verSedesButton, width: 120, hozAlign: 'center', cellClick: verSedesClick },
+  { title: 'Capacidad', field: 'capacidad', hozAlign: 'center' },
+  { title: 'Disponibilidad', field: 'disponibilidad', formatter: 'tickCross', hozAlign: 'center' },
   { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
   { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
 ])
@@ -75,32 +66,32 @@ const tabulatorOptions = ref({
   paginationSize: 5,
   layout: 'fitDataStretch',
   height: '80vh',
-  footerElement: `<button class="ml-2 rounded-lg px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-200 ease-in-out flex items-center gap-2 shadow-lg hover:shadow-xl" id="agregar">${icons.add} Agregar</button>`
+  footerElement: `<button class="ml-2 rounded-lg px-6 py-2 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 shadow-lg" id="agregar">${icons.add} Agregar</button>`
 })
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
-    ciudades.value = Array.isArray(json) ? json : json.data || []
+    salas.value = Array.isArray(json) ? json : json.data || []
 
     const table = tablaTabulator.value?.getTable()
     if (table) {
-      table.setData(ciudadesFiltradas.value)
+      table.setData(salasFiltradas.value)
 
-      const agregarButton = document.querySelector('#agregar')
-      if (agregarButton) {
-        agregarButton.addEventListener('click', () => {
-          formData.value = { nombre: '', id: '' }
+      const agregar = document.querySelector('#agregar')
+      if (agregar) {
+        agregar.addEventListener('click', () => {
+          formData.value = { nombre: '', capacidad: '', disponibilidad: false }
           editingId.value = null
           deleteId.value = null
-          dialogTitle.value = 'Agregar ciudad'
+          dialogTitle.value = 'Agregar sala'
           dialogTw.value?.popup?.show()
         })
       }
     }
   } catch (error) {
-    console.error('Error al cargar ciudades:', error)
+    console.error('Error al cargar salas:', error)
   }
 })
 
@@ -108,13 +99,14 @@ const guardarCambios = async () => {
   try {
     const isEdit = !!editingId.value
     const url = isEdit
-      ? `http://127.0.0.1:3333/ciudades/${editingId.value}`
-      : 'http://127.0.0.1:3333/ciudades'
+      ? `http://127.0.0.1:3333/salas/${editingId.value}`
+      : 'http://127.0.0.1:3333/salas'
+
     const method = isEdit ? 'PUT' : 'POST'
 
     const body = {
       ...formData.value,
-      departamento_id: departamentoId
+      sedes_id: sedeId
     }
 
     const response = await fetch(url, {
@@ -125,34 +117,34 @@ const guardarCambios = async () => {
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
-    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
-    ciudades.value = Array.isArray(json) ? json : json.data || []
+    salas.value = Array.isArray(json) ? json : json.data || []
 
-    await tablaTabulator.value.getTable().setData(ciudadesFiltradas.value)
+    await tablaTabulator.value.getTable().setData(salasFiltradas.value)
     cerrarDialog()
   } catch (error) {
-    console.error('Error al guardar ciudad:', error)
+    console.error('Error al guardar sala:', error)
   }
 }
 
 const eliminarRegistro = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3333/ciudades/${deleteId.value}`, {
+    const response = await fetch(`http://127.0.0.1:3333/salas/${deleteId.value}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' }
     })
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
-    const res = await fetch('http://127.0.0.1:3333/ciudades')
+    const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
-    ciudades.value = Array.isArray(json) ? json : json.data || []
+    salas.value = Array.isArray(json) ? json : json.data || []
 
-    await tablaTabulator.value.getTable().setData(ciudadesFiltradas.value)
+    await tablaTabulator.value.getTable().setData(salasFiltradas.value)
     cerrarDialog()
   } catch (error) {
-    console.error('Error al eliminar ciudad:', error)
+    console.error('Error al eliminar sala:', error)
   }
 }
 
@@ -161,7 +153,7 @@ const cerrarDialog = () => {
 }
 
 const getButtons = () => {
-  if (dialogTitle.value === 'Eliminar ciudad') {
+  if (dialogTitle.value === 'Eliminar sala') {
     return [
       {
         id: 'btn-eliminar',
@@ -216,7 +208,7 @@ const buttons = computed(() => getButtons())
     :dialog-title="dialogTitle"
     class="p-4"
   >
-    <template v-if="dialogTitle !== 'Eliminar ciudad'">
+    <template v-if="dialogTitle !== 'Eliminar sala'">
       <FormTw
         :form-fields="formFields"
         v-model:form-data="formData"
@@ -226,7 +218,7 @@ const buttons = computed(() => getButtons())
     <template v-else>
       <div class="p-4 text-center">
         <p class="text-lg text-red-700 dark:text-red-300">
-          ¿Está seguro que desea eliminar la ciudad "{{ formData.nombre }}"?
+          ¿Está seguro que desea eliminar la sala "{{ formData.nombre }}"?
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Esta acción no se puede deshacer.

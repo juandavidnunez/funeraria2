@@ -101,6 +101,23 @@ function getTabulatorOptions() {
     paginationSize: 5,
     layout: 'fitDataStretch',
     height: '80vh',
+    // Agregar esta función para transformar la respuesta
+    ajaxResponse: function(url, params, response) {
+      // Si tu API devuelve directamente un array de departamentos
+      if (Array.isArray(response)) {
+        return {
+          data: response,
+          last_page: Math.ceil(response.length / params.size) || 1,
+          current_page: params.page || 1
+        };
+      }
+      // Si tu API ya devuelve un objeto con estructura, solo asegurar que tenga last_page
+      return {
+        data: response.data || response,
+        last_page: response.last_page || response.total_pages || Math.ceil((response.total || response.data?.length || 1) / params.size) || 1,
+        current_page: response.current_page || response.page || params.page || 1
+      };
+    },
     footerElement: esAdmin.value
       ? `<button class="ml-2 rounded px-4 py-1 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-1" id="agregar">${icons.add} Agregar</button>`
       : ''

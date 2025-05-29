@@ -33,7 +33,7 @@ const props = defineProps({
       <slot></slot>
     </div>
 
-    <footer v-if="buttons.length">
+    <footer v-if="buttons && buttons.length">
       <ButtonTw v-for="b in buttons" :text-content="b.textContent" :mode="b.mode" :icon="b.icon" :handleClick="b.handleClick" />
     </footer>
   </dialog>

@@ -4,7 +4,7 @@ import DepartamentosViews from '../views/DepartamentosViews.vue'
 import CiudadesViews from '../views/CiudadesViews.vue'
 import SedesViews from '../views/SedesViews.vue'
 import SalasViews from '../views/SalasViews.vue'
-
+import CremacionViews from '../views/CremacionViews.vue'
 
 const routes = [
   {
@@ -32,7 +32,11 @@ const routes = [
   {
   path: '/salas/:sedeId',
   component:  SalasViews
-}
+},
+{
+    path: '/cremacion',
+    component: CremacionViews
+  },
 ]
 
 const router = createRouter({

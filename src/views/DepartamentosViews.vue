@@ -13,21 +13,45 @@ const router = useRouter()
 const tablaTabulator = ref(null)
 const dialogTw = ref(null)
 const dialogTitle = ref('')
-
 const formData = ref({ nombre: '', id: '' })
 const editingId = ref(null)
 const deleteId = ref(null)
+
+// CAMBIO: Obtener usuario real del localStorage
+const usuario = ref(null)
+
+onMounted(() => {
+  // Cargar usuario del localStorage
+  const usuarioGuardado = localStorage.getItem('usuario')
+  if (usuarioGuardado) {
+    usuario.value = JSON.parse(usuarioGuardado)
+  }
+})
 
 const formFields = [
   { id: 'nombre', label: 'Nombre', type: 'text' },
   { id: 'id', label: 'ID', type: 'number' }
 ]
 
-const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
-const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
-const ciudadesRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-emerald-600 hover:text-emerald-800" title="Ciudades"> Ciudades</button>`
+const esAdmin = computed(() => usuario.value?.role === 'admin')
+const tabulatorKey = computed(() => `tabla-${esAdmin.value}`)
+
+const editRowButton = () => {
+  if (!esAdmin.value) return ''
+  return `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
+}
+
+const deleteRowButton = () => {
+  if (!esAdmin.value) return ''
+  return `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
+}
+
+const ciudadesRowButton = () => {
+  return `<button class="flex items-center gap-1 border-0 bg-transparent text-emerald-600 hover:text-emerald-800" title="Ciudades"> Ciudades</button>`
+}
 
 function editRowClick(e, cell) {
+  if (!esAdmin.value) return
   const rowData = cell.getRow().getData()
   editingId.value = rowData.id
   formData.value = { ...rowData }
@@ -36,6 +60,7 @@ function editRowClick(e, cell) {
 }
 
 function deleteRowClick(e, cell) {
+  if (!esAdmin.value) return
   const rowData = cell.getRow().getData()
   deleteId.value = rowData.id
   formData.value = { ...rowData }
@@ -48,45 +73,69 @@ function ciudadesRowClick(e, cell) {
   router.push(`/ciudades/${rowData.id}`)
 }
 
-const columns = ref([
-  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 100 },
-  { title: 'Nombre', field: 'nombre', widthGrow: 1 },
-  { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
-  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick },
-  { formatter: ciudadesRowButton, width: 160, hozAlign: 'center', cellClick: ciudadesRowClick }
-])
+const columns = computed(() => {
+  const baseCols = [
+    { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 100 },
+    { title: 'Nombre', field: 'nombre', widthGrow: 1 },
+    { formatter: ciudadesRowButton, width: 160, hozAlign: 'center', cellClick: ciudadesRowClick }
+  ]
 
-const tabulatorOptions = ref({
-  locale: 'es-419',
-  langs: { 'es-419': es419 },
-  pagination: true,
-  paginationMode: 'remote',
-  ajaxURL: 'http://127.0.0.1:3333/departamentos',
-  paginationSize: 5,
-  layout: 'fitDataStretch',
-  height: '80vh',
-  footerElement: `<button class="ml-2 rounded px-4 py-1 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-1" id="agregar">${icons.add} Agregar</button>`
+  if (esAdmin.value) {
+    baseCols.splice(2, 0,
+      { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
+      { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
+    )
+  }
+
+  return baseCols
 })
+
+function getTabulatorOptions() {
+  return {
+    locale: 'es-419',
+    langs: { 'es-419': es419 },
+    pagination: true,
+    paginationMode: 'remote',
+    ajaxURL: 'http://127.0.0.1:3333/departamentos',
+    paginationSize: 5,
+    layout: 'fitDataStretch',
+    height: '80vh',
+    footerElement: esAdmin.value
+      ? `<button class="ml-2 rounded px-4 py-1 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-1" id="agregar">${icons.add} Agregar</button>`
+      : ''
+  }
+}
+
+const tabulatorOptions = computed(() => getTabulatorOptions())
+
+function abrirDialogAgregar() {
+  if (!esAdmin.value) return
+  formData.value = { nombre: '', id: '' }
+  editingId.value = null
+  deleteId.value = null
+  dialogTitle.value = 'Agregar departamento'
+  dialogTw.value?.popup?.show()
+}
 
 onMounted(() => {
   const table = tablaTabulator.value?.getTable()
   if (!table) return
 
-  table.on('tableBuilt', () => {
+  function agregarListener() {
     const agregar = document.querySelector('#agregar')
-    if (agregar) {
-      agregar.addEventListener('click', () => {
-        formData.value = { nombre: '', id: '' }
-        editingId.value = null
-        deleteId.value = null
-        dialogTitle.value = 'Agregar departamento'
-        dialogTw.value?.popup?.show()
-      })
+    if (agregar && esAdmin.value) {
+      agregar.removeEventListener('click', abrirDialogAgregar)
+      agregar.addEventListener('click', abrirDialogAgregar)
     }
-  })
+  }
+
+  table.on('tableBuilt', agregarListener)
+  table.on('dataLoaded', agregarListener)
 })
 
 const guardarCambios = async () => {
+  if (!esAdmin.value) return
+
   try {
     const isEdit = !!editingId.value
     const url = isEdit
@@ -110,6 +159,8 @@ const guardarCambios = async () => {
 }
 
 const eliminarRegistro = async () => {
+  if (!esAdmin.value) return
+
   try {
     const response = await fetch(`http://127.0.0.1:3333/departamentos/${deleteId.value}`, {
       method: 'DELETE',
@@ -171,6 +222,7 @@ const buttons = computed(() => getButtons())
   <div class="w-full flex justify-center items-start p-6">
     <div class="w-full max-w-screen-xl">
       <TabulatorTable
+        :key="tabulatorKey"
         :columns="columns"
         :options="tabulatorOptions"
         ref="tablaTabulator"
@@ -179,7 +231,9 @@ const buttons = computed(() => getButtons())
     </div>
   </div>
 
+  <!-- CAMBIO: Solo mostrar el dialog si el usuario es admin -->
   <DialogTw
+    v-if="esAdmin"
     ref="dialogTw"
     :buttons="buttons"
     :dialog-title="dialogTitle"

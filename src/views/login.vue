@@ -38,7 +38,7 @@ const login = async () => {
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 p-4">
     <div class="bg-white shadow-xl rounded-2xl p-8 max-w-sm w-full space-y-6">
-      <h2 class="text-2xl font-bold text-center text-indigo-700">Iniciar sesión</h2>
+      <h2 class="text-2xl font-bold text-center text-blue-700">Iniciar sesión</h2>
 
       <div class="space-y-4">
         <div>
@@ -69,7 +69,7 @@ const login = async () => {
 
         <button
           @click="login"
-          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-semibold transition"
+          class="w-full bg-blue-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-semibold transition"
         >
           Entrar
         </button>

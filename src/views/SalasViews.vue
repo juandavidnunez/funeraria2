@@ -10,6 +10,39 @@ import es419 from '../assets/es-419.js'
 const route = useRoute()
 const sedeId = parseInt(route.params.sedeId)
 
+// Obtener el usuario desde localStorage y definir si es admin
+const getUserFromStorage = () => {
+  try {
+    // Intentar con ambas claves por si hay inconsistencia
+    const userStr = localStorage.getItem('user') || localStorage.getItem('usuario')
+    const user = userStr ? JSON.parse(userStr) : {}
+    console.log('🔍 Usuario desde localStorage:', user)
+    console.log('🔍 Rol del usuario:', user?.role)
+    
+    // Verificar diferentes posibles formatos del rol
+    const role = user?.role || user?.user?.role || user?.Role
+    const isAdminCheck = 
+      role === 'admin' || 
+      role === 'Admin' || 
+      role === 'ADMIN' ||
+      role?.toLowerCase()?.trim() === 'admin'
+    
+    console.log('🔍 Role encontrado:', role)
+    console.log('🔍 Es admin?:', isAdminCheck)
+    return { ...user, isAdmin: isAdminCheck }
+  } catch (error) {
+    console.error('Error al leer usuario desde localStorage:', error)
+    return { isAdmin: false }
+  }
+}
+
+const userData = getUserFromStorage()
+const user = userData
+const isAdmin = userData.isAdmin
+
+// Para debugging - forzar admin temporalmente (QUITAR EN PRODUCCIÓN)
+// const isAdmin = true
+
 const tablaTabulator = ref(null)
 const dialogTw = ref(null)
 const dialogTitle = ref('')
@@ -31,10 +64,24 @@ const salasFiltradas = computed(() =>
     : []
 )
 
-const editRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800" title="Editar">${icons.edit} Editar</button>`
-const deleteRowButton = () => `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800" title="Eliminar">${icons.delete} Eliminar</button>`
+// Función para mostrar/ocultar botón de editar según rol
+const editRowButton = () => {
+  console.log('🔍 editRowButton - isAdmin:', isAdmin)
+  return isAdmin
+    ? `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Editar">${icons.edit} Editar</button>`
+    : ''
+}
+
+// Función para mostrar/ocultar botón de eliminar según rol
+const deleteRowButton = () => {
+  console.log('🔍 deleteRowButton - isAdmin:', isAdmin)
+  return isAdmin
+    ? `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800 transition duration-200 ease-in-out rounded-lg py-1 px-4 shadow-md hover:shadow-lg" title="Eliminar">${icons.delete} Eliminar</button>`
+    : ''
+}
 
 function editRowClick(e, cell) {
+  if (!isAdmin) return
   const rowData = cell.getRow().getData()
   editingId.value = rowData.id
   formData.value = { ...rowData }
@@ -43,6 +90,7 @@ function editRowClick(e, cell) {
 }
 
 function deleteRowClick(e, cell) {
+  if (!isAdmin) return
   const rowData = cell.getRow().getData()
   deleteId.value = rowData.id
   formData.value = { ...rowData }
@@ -50,26 +98,55 @@ function deleteRowClick(e, cell) {
   dialogTw.value?.popup?.show()
 }
 
-const columns = ref([
-  { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 80 },
-  { title: 'Nombre', field: 'nombre', widthGrow: 1 },
-  { title: 'Capacidad', field: 'capacidad', hozAlign: 'center' },
-  { title: 'Disponibilidad', field: 'disponibilidad', formatter: 'tickCross', hozAlign: 'center' },
-  { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
-  { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
-])
+// Columnas condicionadas según el rol del usuario
+const columns = computed(() => {
+  console.log('🔍 Calculando columns - isAdmin:', isAdmin)
+  const baseColumns = [
+    { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 80 },
+    { title: 'Nombre', field: 'nombre', widthGrow: 1 },
+    { title: 'Capacidad', field: 'capacidad', hozAlign: 'center' },
+    { title: 'Disponibilidad', field: 'disponibilidad', formatter: 'tickCross', hozAlign: 'center' }
+  ]
 
-const tabulatorOptions = ref({
-  locale: 'es-419',
-  langs: { 'es-419': es419 },
-  pagination: true,
-  paginationSize: 5,
-  layout: 'fitDataStretch',
-  height: '80vh',
-  footerElement: `<button class="ml-2 rounded-lg px-6 py-2 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 shadow-lg" id="agregar">${icons.add} Agregar</button>`
+  // Solo agregar columnas de acciones si es admin
+  if (isAdmin) {
+    console.log('✅ Agregando columnas de acciones (es admin)')
+    baseColumns.push(
+      { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
+      { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
+    )
+  } else {
+    console.log('❌ No agregando columnas de acciones (no es admin)')
+  }
+
+  console.log('🔍 Columnas finales:', baseColumns.length)
+  return baseColumns
+})
+
+// Opciones de Tabulator condicionadas según el rol
+const tabulatorOptions = computed(() => {
+  console.log('🔍 Calculando tabulatorOptions - isAdmin:', isAdmin)
+  const options = {
+    locale: 'es-419',
+    langs: { 'es-419': es419 },
+    pagination: true,
+    paginationSize: 5,
+    layout: 'fitDataStretch',
+    height: '80vh',
+    // Solo mostrar botón de agregar si es admin
+    footerElement: isAdmin
+      ? `<button class="ml-2 rounded-lg px-6 py-2 bg-green-600 text-white hover:bg-green-700 transition duration-200 ease-in-out flex items-center gap-2 shadow-lg hover:shadow-xl" id="agregar">${icons.add} Agregar</button>`
+      : ''
+  }
+  console.log('🔍 FooterElement:', options.footerElement ? 'Con botón' : 'Sin botón')
+  return options
 })
 
 onMounted(async () => {
+  console.log('🚀 Componente montado')
+  console.log('🔍 isAdmin al montar:', isAdmin)
+  console.log('🔍 Usuario completo:', user)
+  
   try {
     const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
@@ -79,15 +156,25 @@ onMounted(async () => {
     if (table) {
       table.setData(salasFiltradas.value)
 
-      const agregar = document.querySelector('#agregar')
-      if (agregar) {
-        agregar.addEventListener('click', () => {
-          formData.value = { nombre: '', capacidad: '', disponibilidad: false }
-          editingId.value = null
-          deleteId.value = null
-          dialogTitle.value = 'Agregar sala'
-          dialogTw.value?.popup?.show()
-        })
+      // Solo agregar event listener si es admin
+      if (isAdmin) {
+        console.log('✅ Agregando listener del botón agregar (es admin)')
+        setTimeout(() => {
+          const agregarButton = document.querySelector('#agregar')
+          console.log('🔍 Botón agregar encontrado:', !!agregarButton)
+          if (agregarButton) {
+            agregarButton.addEventListener('click', () => {
+              console.log('🖱️ Click en botón agregar')
+              formData.value = { nombre: '', capacidad: '', disponibilidad: false }
+              editingId.value = null
+              deleteId.value = null
+              dialogTitle.value = 'Agregar sala'
+              dialogTw.value?.popup?.show()
+            })
+          }
+        }, 100)
+      } else {
+        console.log('❌ No es admin, no se agrega listener del botón')
       }
     }
   } catch (error) {
@@ -96,18 +183,29 @@ onMounted(async () => {
 })
 
 const guardarCambios = async () => {
+  // Solo permitir si es admin
+  if (!isAdmin) {
+    alert('No tienes permisos para realizar esta acción.')
+    return
+  }
+
   try {
+    if (!formData.value.nombre || !formData.value.capacidad) {
+      alert('Por favor completa todos los campos obligatorios.')
+      return
+    }
+
     const isEdit = !!editingId.value
     const url = isEdit
       ? `http://127.0.0.1:3333/salas/${editingId.value}`
       : 'http://127.0.0.1:3333/salas'
-
     const method = isEdit ? 'PUT' : 'POST'
 
     const body = {
       ...formData.value,
       sedes_id: sedeId
     }
+    console.log('➡️ Enviando al backend:', JSON.stringify(body, null, 2))
 
     const response = await fetch(url, {
       method,
@@ -115,7 +213,11 @@ const guardarCambios = async () => {
       body: JSON.stringify(body)
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (!response.ok) {
+      const errorJson = await response.json()
+      console.error('Error detallado desde backend:', errorJson)
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
 
     const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
@@ -129,6 +231,12 @@ const guardarCambios = async () => {
 }
 
 const eliminarRegistro = async () => {
+  // Solo permitir si es admin
+  if (!isAdmin) {
+    alert('No tienes permisos para realizar esta acción.')
+    return
+  }
+
   try {
     const response = await fetch(`http://127.0.0.1:3333/salas/${deleteId.value}`, {
       method: 'DELETE',
@@ -202,7 +310,9 @@ const buttons = computed(() => getButtons())
     </div>
   </div>
 
+  <!-- Solo mostrar el diálogo si es admin -->
   <DialogTw
+    v-if="isAdmin"
     ref="dialogTw"
     :buttons="buttons"
     :dialog-title="dialogTitle"

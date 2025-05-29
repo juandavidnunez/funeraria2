@@ -8,7 +8,8 @@ const router = useRouter()
 const usuario = ref(null)
 
 onMounted(() => {
-  const usuarioGuardado = localStorage.getItem('usuario')
+  // Usar la misma clave 'user' para consistencia
+  const usuarioGuardado = localStorage.getItem('user') || localStorage.getItem('usuario')
   if (usuarioGuardado) {
     usuario.value = JSON.parse(usuarioGuardado)
   }
@@ -22,6 +23,8 @@ onMounted(() => {
 })
 
 const cerrarSesion = () => {
+  // Limpiar ambas claves por si acaso
+  localStorage.removeItem('user')
   localStorage.removeItem('usuario')
   usuario.value = null
   router.push('/login')
@@ -50,7 +53,10 @@ const cerrarSesion = () => {
       <!-- Usuario + Logout -->
       <div v-if="usuario" class="flex items-center gap-4">
         <span class="text-sm text-gray-700 font-medium">
-          {{ usuario.email }} ({{ usuario.role }})
+          {{ usuario.email }} 
+          <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs ml-2">
+            {{ usuario.role }}
+          </span>
         </span>
         <button
           @click="cerrarSesion"
@@ -68,24 +74,24 @@ const cerrarSesion = () => {
     >
       <nav class="flex-1 py-6 text-gray-700">
         <ul class="space-y-2">
-          <li>
+          <li v-if="!usuario">
             <RouterLink
               to="/login"
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="showSidebar = false"
             >
-              <img src="./img/person.avif" alt="icono">
+              <img src="./img/cuenta.png" alt="icono">
               Login
             </RouterLink>
           </li>
-           <li>
+          <li v-if="!usuario">
             <RouterLink
               to="/registrate"
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="showSidebar = false"
             >
-              <img src="./img/person.avif" alt="icono">
-              Regisrate
+              <img src="./img/verificar.png" alt="icono">
+              Regístrate
             </RouterLink>
           </li>
           <li>

@@ -78,6 +78,16 @@ const cerrarSesion = () => {
               Login
             </RouterLink>
           </li>
+           <li>
+            <RouterLink
+              to="/registrate"
+              class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
+              @click="showSidebar = false"
+            >
+              <img src="./img/person.avif" alt="icono">
+              Regisrate
+            </RouterLink>
+          </li>
           <li>
             <RouterLink
               to="/"

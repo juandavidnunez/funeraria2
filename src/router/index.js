@@ -8,6 +8,8 @@ import CremacionViews from '../views/CremacionViews.vue'
 import SepulturaViews from '../views/SepulturaViews.vue'
 import TrasladoViews from '../views/TrasladoViews.vue'
 import login from '../views/login.vue'
+import registrate from '../views/registrate.vue'
+
 
 
 const routes = [
@@ -21,6 +23,10 @@ const routes = [
   },{
     path: '/login',
     component: login
+  },
+  ,{
+    path: '/registrate',
+    component: registrate
   },
    
   {

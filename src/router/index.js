@@ -5,6 +5,7 @@ import CiudadesViews from '../views/CiudadesViews.vue'
 import SedesViews from '../views/SedesViews.vue'
 import SalasViews from '../views/SalasViews.vue'
 import CremacionViews from '../views/CremacionViews.vue'
+import SepulturaViews from '../views/SepulturaViews.vue'
 
 const routes = [
   {
@@ -33,9 +34,13 @@ const routes = [
   path: '/salas/:sedeId',
   component:  SalasViews
 },
-{
+  {
     path: '/cremacion',
     component: CremacionViews
+  },
+  {
+    path: '/sepultura',
+    component: SepulturaViews
   },
 ]
 

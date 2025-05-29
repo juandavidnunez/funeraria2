@@ -16,8 +16,7 @@ const getUserFromStorage = () => {
     // Intentar con ambas claves por si hay inconsistencia
     const userStr = localStorage.getItem('user') || localStorage.getItem('usuario')
     const user = userStr ? JSON.parse(userStr) : {}
-    console.log('🔍 Usuario desde localStorage:', user)
-    console.log('🔍 Rol del usuario:', user?.role)
+
     
     // Verificar diferentes posibles formatos del rol
     const role = user?.role || user?.user?.role || user?.Role
@@ -26,9 +25,7 @@ const getUserFromStorage = () => {
       role === 'Admin' || 
       role === 'ADMIN' ||
       role?.toLowerCase()?.trim() === 'admin'
-    
-    console.log('🔍 Role encontrado:', role)
-    console.log('🔍 Es admin?:', isAdminCheck)
+
     return { ...user, isAdmin: isAdminCheck }
   } catch (error) {
     console.error('Error al leer usuario desde localStorage:', error)
@@ -65,7 +62,7 @@ const cremacionesFiltradas = computed(() =>
 
 // Función para mostrar/ocultar botón de editar según rol
 const editRowButton = () => {
-  console.log('🔍 editRowButton - isAdmin:', isAdmin)
+
   return isAdmin
     ? `<button class="flex items-center gap-1 border-0 bg-transparent text-blue-600 hover:text-blue-800">${icons.edit} Editar</button>`
     : ''
@@ -73,7 +70,6 @@ const editRowButton = () => {
 
 // Función para mostrar/ocultar botón de eliminar según rol
 const deleteRowButton = () => {
-  console.log('🔍 deleteRowButton - isAdmin:', isAdmin)
   return isAdmin
     ? `<button class="flex items-center gap-1 border-0 bg-transparent text-red-600 hover:text-red-800">${icons.delete} Eliminar</button>`
     : ''
@@ -104,7 +100,6 @@ function deleteRowClick(e, cell) {
 
 // Columnas condicionadas según el rol del usuario
 const columns = computed(() => {
-  console.log('🔍 Calculando columns - isAdmin:', isAdmin)
   const baseColumns = [
     { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 80 },
     { title: 'Ubicación', field: 'ubicacion' },
@@ -113,22 +108,18 @@ const columns = computed(() => {
 
   // Solo agregar columnas de acciones si es admin
   if (isAdmin) {
-    console.log('✅ Agregando columnas de acciones (es admin)')
     baseColumns.push(
       { formatter: editRowButton, width: 120, hozAlign: 'center', cellClick: editRowClick },
       { formatter: deleteRowButton, width: 140, hozAlign: 'center', cellClick: deleteRowClick }
     )
-  } else {
-    console.log('❌ No agregando columnas de acciones (no es admin)')
   }
 
-  console.log('🔍 Columnas finales:', baseColumns.length)
+  
   return baseColumns
 })
 
 // Opciones de Tabulator condicionadas según el rol
 const tabulatorOptions = computed(() => {
-  console.log('🔍 Calculando tabulatorOptions - isAdmin:', isAdmin)
   const options = {
     locale: 'es-419',
     langs: { 'es-419': es419 },
@@ -141,15 +132,10 @@ const tabulatorOptions = computed(() => {
       ? `<button class="ml-2 rounded-lg px-6 py-2 bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 shadow-lg" id="agregar">${icons.add} Agregar</button>`
       : ''
   }
-  console.log('🔍 FooterElement:', options.footerElement ? 'Con botón' : 'Sin botón')
   return options
 })
 
 onMounted(async () => {
-  console.log('🚀 Componente montado')
-  console.log('🔍 isAdmin al montar:', isAdmin)
-  console.log('🔍 Usuario completo:', user)
-  
   try {
     const res = await fetch('http://127.0.0.1:3333/cremaciones')
     const json = await res.json()
@@ -161,13 +147,10 @@ onMounted(async () => {
 
       // Solo agregar event listener si es admin
       if (isAdmin) {
-        console.log('✅ Agregando listener del botón agregar (es admin)')
         setTimeout(() => {
           const agregar = document.querySelector('#agregar')
-          console.log('🔍 Botón agregar encontrado:', !!agregar)
           if (agregar) {
             agregar.addEventListener('click', () => {
-              console.log('🖱️ Click en botón agregar')
               formData.value = { ubicacion: '', fecha_hora: '', servicio_id: servicioId }
               editingId.value = null
               deleteId.value = null
@@ -176,8 +159,6 @@ onMounted(async () => {
             })
           }
         }, 100)
-      } else {
-        console.log('❌ No es admin, no se agrega listener del botón')
       }
     }
   } catch (error) {
@@ -214,8 +195,6 @@ const guardarCambios = async () => {
       fecha_hora: fechaFormateada,
       servicio_id: 1
     }
-
-    console.log('➡️ Enviando al backend:', JSON.stringify(payload, null, 2))
     const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },

@@ -1,36 +1,38 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
-const correo = ref('')
-const password = ref('')
-const error = ref('')
-const router = useRouter()
+const correo = ref('');
+const password = ref('');
+const error = ref('');
+const router = useRouter();
 
 const login = async () => {
   try {
-    const { data } = await axios.get('http://localhost:3333/usuarios')
-    console.log('Respuesta del backend:', data)
+    const { data } = await axios.get('http://localhost:3333/usuarios');
+    console.log('Respuesta del backend:', data);
 
-    // Extraer el array de usuarios desde 'data.data'
-    const usuarios = Array.isArray(data.data) ? data.data : []
+    const usuarios = Array.isArray(data.data) ? data.data : [];
 
     const usuarioEncontrado = usuarios.find(
       (u) => u.email === correo.value && u.password === password.value
-    )
+    );
 
     if (usuarioEncontrado) {
-      localStorage.setItem('usuario', JSON.stringify(usuarioEncontrado))
-      router.push('/')
+      localStorage.setItem('usuario', JSON.stringify(usuarioEncontrado));
+      
+      // Redirigir y recargar la página
+      router.push('/');
+      setTimeout(() => window.location.reload(), 100);
     } else {
-      error.value = 'Correo o contraseña incorrectos'
+      error.value = 'Correo o contraseña incorrectos';
     }
   } catch (err) {
-    console.error(err)
-    error.value = 'Error al conectar con el servidor'
+    console.error('Error en login:', err);
+    error.value = 'Error al conectar con el servidor';
   }
-}
+};
 </script>
 
 <template>

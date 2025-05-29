@@ -106,12 +106,40 @@ function deleteRowClick(e, cell) {
 }
 
 // Columnas condicionadas según el rol del usuario
+// Reemplaza tu sección de "columns" computed con esto:
+
 const columns = computed(() => {
   const baseColumns = [
     { title: 'ID', field: 'id', sorter: 'number', hozAlign: 'center', width: 80 },
     { title: 'Origen', field: 'origen' },
     { title: 'Destino', field: 'destino' },
-    { title: 'Fecha y hora', field: 'fecha_hora' },
+    { 
+      title: 'Fecha y hora', 
+      field: 'fecha_hora',
+      formatter: (cell) => {
+        const fecha = cell.getValue()
+        if (!fecha) return ''
+        
+        try {
+          const date = new Date(fecha)
+          // Si la fecha no es válida, mostrar el valor original
+          if (isNaN(date.getTime())) return fecha
+          
+          // Formato: DD/MM/YYYY HH:MM
+          return date.toLocaleString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false // Para formato 24 horas
+          })
+        } catch (error) {
+          console.error('Error al formatear fecha:', error)
+          return fecha // Devolver valor original en caso de error
+        }
+      }
+    },
     { title: 'Tipo de vehículo', field: 'tipo_vehiculo' }
   ]
 

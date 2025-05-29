@@ -22,11 +22,26 @@ const updateField = (field, value) => {
 <template>
   <form @submit.prevent="$emit('submit')" class="space-y-6 w-full">
     <div v-for="field in formFields" :key="field.id" class="mb-6">
-      <label :for="field.id" class="block text-lg font-semibold text- mb-2">
+      <label :for="field.id" class="block text-lg font-semibold mb-2">
         {{ field.label }}
       </label>
-      <input 
-        :type="field.type" 
+
+      <!-- Campo checkbox -->
+      <div v-if="field.type === 'checkbox'" class="flex items-center gap-3">
+        <input
+          type="checkbox"
+          :id="field.id"
+          :checked="formData[field.id]"
+          @change="updateField(field.id, $event.target.checked)"
+          class="h-5 w-5 text-cyan-600 rounded focus:ring-cyan-500 border-gray-300"
+        />
+        <label :for="field.id" class="text-gray-200 text-base">{{ field.label }}</label>
+      </div>
+
+      <!-- Campo texto, número, etc. -->
+      <input
+        v-else
+        :type="field.type"
         :id="field.id"
         :value="formData[field.id]"
         :placeholder="`Ingrese ${field.label.toLowerCase()}`"
@@ -38,14 +53,3 @@ const updateField = (field, value) => {
     </div>
   </form>
 </template>
-
-<style scoped>
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-</style>

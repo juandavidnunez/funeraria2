@@ -133,7 +133,11 @@ onMounted(async () => {
   try {
     const res = await fetch('http://127.0.0.1:3333/salas')
     const json = await res.json()
-    salas.value = Array.isArray(json) ? json : json.data || []
+    salas.value = (Array.isArray(json) ? json : json.data || []).map(sala => ({
+  ...sala,
+  disponibilidad: sala.disponibilidad === true || sala.disponibilidad === 1 || sala.disponibilidad === 'true'
+}))
+
 
     const table = tablaTabulator.value?.getTable()
     if (table) {
@@ -179,10 +183,12 @@ const guardarCambios = async () => {
       : 'http://127.0.0.1:3333/salas'
     const method = isEdit ? 'PUT' : 'POST'
 
-    const body = {
-      ...formData.value,
-      sedes_id: sedeId
-    }
+const body = {
+  ...formData.value,
+  disponibilidad: !!formData.value.disponibilidad, // fuerza valor booleano
+  sedes_id: sedeId
+}
+
 
 
     const response = await fetch(url, {

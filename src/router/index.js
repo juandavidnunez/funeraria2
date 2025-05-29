@@ -6,6 +6,7 @@ import SedesViews from '../views/SedesViews.vue'
 import SalasViews from '../views/SalasViews.vue'
 import CremacionViews from '../views/CremacionViews.vue'
 import SepulturaViews from '../views/SepulturaViews.vue'
+import TrasladoViews from '../views/TrasladoViews.vue'
 
 const routes = [
   {
@@ -41,6 +42,10 @@ const routes = [
   {
     path: '/sepultura',
     component: SepulturaViews
+  },
+  {
+    path: '/traslado',
+    component: TrasladoViews
   },
 ]
 

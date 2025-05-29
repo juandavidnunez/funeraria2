@@ -3,18 +3,27 @@ import { ref, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 const showSidebar = ref(false)
+const usuario = ref(null)
+
 const route = useRoute()
 const router = useRouter()
+
+const cargarUsuario = () => {
+  const userData = localStorage.getItem('usuario')
+  usuario.value = userData ? JSON.parse(userData) : null
+}
 
 // Cierra el menú si se navega desde un enlace en móvil
 const handleNavigation = () => {
   if (window.innerWidth < 768) {
     showSidebar.value = false
   }
+  cargarUsuario()
 }
 
 // Detecta navegación manual también (ej. back/forward)
 onMounted(() => {
+  cargarUsuario()
   router.afterEach(() => {
     handleNavigation()
   })
@@ -39,6 +48,9 @@ onMounted(() => {
         <img src="../src/img/logoS.jpg" alt="Logo" class="h-14 w-14 rounded-full" />
         <h1 class="text-2xl font-bold text-gray-800">Senderos de Luz</h1>
       </div>
+      <div v-if="usuario" class="text-sm text-gray-700 font-semibold">
+        {{ usuario.email }} ({{ usuario.role }})
+      </div>
     </header>
 
     <!-- Sidebar fijo -->
@@ -50,11 +62,21 @@ onMounted(() => {
         <ul class="space-y-2">
           <li>
             <RouterLink
+              to="/login"
+              class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
+              @click="handleNavigation"
+            >
+              <img src="./img/person.avif" alt="">
+              Login
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
               to="/"
               class=" px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="handleNavigation"
             >
-              <img class="w-4" ref="icon" src="./img/image.png" alt="">
+              <img class="w-4" src="./img/image.png" alt="">
               Inicio
             </RouterLink>
           </li>
@@ -64,7 +86,7 @@ onMounted(() => {
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="handleNavigation"
             >
-            <img  ref="icon" src="./img/colombia.png" alt="">
+              <img src="./img/colombia.png" alt="">
               Departamentos
             </RouterLink>
           </li>
@@ -74,8 +96,8 @@ onMounted(() => {
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="handleNavigation"
             >
-            <img  ref="icon" src="./img/urna-de-cremacion.png" alt="">
-              Servicio de Cremacion
+              <img src="./img/urna-de-cremacion.png" alt="">
+              Servicio de Cremación
             </RouterLink>
           </li>
           <li>
@@ -84,7 +106,7 @@ onMounted(() => {
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="handleNavigation"
             >
-              <img  ref="icon" src="./img/coche-funebre.png" alt="">
+              <img src="./img/coche-funebre.png" alt="">
               Traslado
             </RouterLink>
           </li>
@@ -94,7 +116,7 @@ onMounted(() => {
               class="px-6 py-3 hover:bg-blue-200 transition rounded-l-full flex items-center gap-2"
               @click="handleNavigation"
             >
-              <img  ref="icon" src="./img/sepultura.png" alt="">
+              <img src="./img/sepultura.png" alt="">
               Sepultura
             </RouterLink>
           </li>
@@ -112,7 +134,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos para el scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
@@ -126,7 +147,6 @@ onMounted(() => {
   border-radius: 3px;
 }
 
-/* Prevenir scroll del body */
 :root {
   overflow: hidden;
 }

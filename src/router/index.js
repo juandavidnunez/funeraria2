@@ -7,6 +7,8 @@ import SalasViews from '../views/SalasViews.vue'
 import CremacionViews from '../views/CremacionViews.vue'
 import SepulturaViews from '../views/SepulturaViews.vue'
 import TrasladoViews from '../views/TrasladoViews.vue'
+import login from '../views/login.vue'
+
 
 const routes = [
   {
@@ -16,6 +18,9 @@ const routes = [
   {
     path: '/departamentos',
     component: DepartamentosViews
+  },{
+    path: '/login',
+    component: login
   },
    
   {

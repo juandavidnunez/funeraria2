@@ -16,12 +16,11 @@ const dialogTitle = ref('')
 const formData = ref({ nombre: '', id: '' })
 const editingId = ref(null)
 const deleteId = ref(null)
+const errorMessages = ref([]) // Manejo de errores de validación
 
-// CAMBIO: Obtener usuario real del localStorage
 const usuario = ref(null)
 
 onMounted(() => {
-  // Cargar usuario del localStorage
   const usuarioGuardado = localStorage.getItem('usuario')
   if (usuarioGuardado) {
     usuario.value = JSON.parse(usuarioGuardado)
@@ -56,6 +55,7 @@ function editRowClick(e, cell) {
   editingId.value = rowData.id
   formData.value = { ...rowData }
   dialogTitle.value = 'Editar departamento'
+  errorMessages.value = []
   dialogTw.value?.popup?.show()
 }
 
@@ -65,6 +65,7 @@ function deleteRowClick(e, cell) {
   deleteId.value = rowData.id
   formData.value = { ...rowData }
   dialogTitle.value = 'Eliminar departamento'
+  errorMessages.value = []
   dialogTw.value?.popup?.show()
 }
 
@@ -113,6 +114,7 @@ function abrirDialogAgregar() {
   formData.value = { nombre: '', id: '' }
   editingId.value = null
   deleteId.value = null
+  errorMessages.value = []
   dialogTitle.value = 'Agregar departamento'
   dialogTw.value?.popup?.show()
 }
@@ -136,6 +138,8 @@ onMounted(() => {
 const guardarCambios = async () => {
   if (!esAdmin.value) return
 
+  errorMessages.value = []
+
   try {
     const isEdit = !!editingId.value
     const url = isEdit
@@ -149,12 +153,25 @@ const guardarCambios = async () => {
       body: JSON.stringify(formData.value)
     })
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+    if (response.status === 422) {
+      const data = await response.json()
+      if (data.errors && Array.isArray(data.errors)) {
+        errorMessages.value = data.errors.map(e => `${e.field}: ${e.message}`)
+      } else {
+        errorMessages.value = ['Error de validación desconocido.']
+      }
+      return
+    }
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
 
     await tablaTabulator.value.getTable().replaceData()
     cerrarDialog()
   } catch (error) {
     console.error('Error al guardar:', error)
+    errorMessages.value = ['Error inesperado al guardar los cambios.']
   }
 }
 
@@ -173,6 +190,7 @@ const eliminarRegistro = async () => {
     cerrarDialog()
   } catch (error) {
     console.error('Error al eliminar:', error)
+    errorMessages.value = ['Error inesperado al eliminar el registro.']
   }
 }
 
@@ -231,7 +249,6 @@ const buttons = computed(() => getButtons())
     </div>
   </div>
 
-  <!-- CAMBIO: Solo mostrar el dialog si el usuario es admin -->
   <DialogTw
     v-if="esAdmin"
     ref="dialogTw"
@@ -240,6 +257,11 @@ const buttons = computed(() => getButtons())
     class="p-4"
   >
     <template v-if="dialogTitle !== 'Eliminar departamento'">
+      <div v-if="errorMessages.length" class="mb-4 p-3 bg-red-100 border border-red-300 rounded text-red-800 text-sm">
+        <ul>
+          <li v-for="(msg, idx) in errorMessages" :key="idx">{{ msg }}</li>
+        </ul>
+      </div>
       <FormTw
         :form-fields="formFields"
         v-model:form-data="formData"
